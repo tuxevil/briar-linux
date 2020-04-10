@@ -42,6 +42,7 @@ def menuitems(win, item, selected, y, x):
 
 
 def menuBox(menuWin):
+    menuWin.keypad(True)
     # Long strings will wrap to the next line automatically
     # to stay within the window
     start_y = 1
@@ -65,7 +66,7 @@ def menuBox(menuWin):
     while True:
         k = menuWin.getch()
 
-        if k == ord('s'):#258:
+        if k == 258:
             if menuindex == 0:
                 menuindex = 1
                 menuitems(menuWin, "Contacts", False, start_y+2, start_x)
@@ -86,7 +87,7 @@ def menuBox(menuWin):
                 menuindex = 0
                 menuitems(menuWin, "Contacts", True, start_y+2, start_x)
                 menuitems(menuWin, "Exit", False, start_y+7, start_x)
-        elif k == ord('w'):#259:
+        elif k == 259:
             if menuindex == 0:
                 menuindex = 4
                 menuitems(menuWin, "Contacts", False, start_y+2, start_x)

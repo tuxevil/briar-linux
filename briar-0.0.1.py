@@ -6,10 +6,6 @@ from curses import wrapper
 from curses.textpad import Textbox, rectangle
 from pathlib import Path
 
-
-__author__ = "Sebastian Real"
-##test de commit 2
-
 stdscr = curses.initscr()
 
 curses.noecho()

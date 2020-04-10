@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 __author__ = "Sebastian Real"
-##test de commit
+##test de commit 2
 
 stdscr = curses.initscr()
 

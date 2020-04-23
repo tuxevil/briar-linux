@@ -23,7 +23,7 @@ def contacts():
         contactList.append(contact["author"]["name"])
     return contactList
 
-def messages(contactId, contactName):
+def messages(contactId):
     url_format = apiURL + "/v1/messages/" + str(contactId)
     response = requests.get(url_format, headers = auth )
     json_data = response.json()
@@ -31,17 +31,45 @@ def messages(contactId, contactName):
     
     
 
-def message(stdscr, message, y):
+def message(message):
     #varibles for the other's person messages
-    color, x = 6, 3
+    color, x = 6, 1
     #change variables if is our own messages
     if message["local"] == True:
-        color, x = 5, 20
-    #apply variables and print the text
-    stdscr.attron(curses.color_pair(color))
-    stdscr.addstr(y, x, message["text"])
-    stdscr.attroff(curses.color_pair(color))
+        color, x = 5, 11
+    return color, x, message["text"]
     
+def send(stdscr, contactId, contactName):
+    draw_window(stdscr, "Briar Linux Client", "Type your message and press Ctrl+G to send")
+    # Centering calculations
+    height, width = stdscr.getmaxyx()
+    z = 18
+    x, y = int((width // 2) - (z // 2) - z % 2), 3
+    stdscr.addstr(y-1,x,"New message for: " + contactName, curses.color_pair(2))
+    
+    ncols, nlines = 40, 5
+    uly, ulx = 5, 2
+    editwin = curses.newwin(nlines, ncols, uly, ulx)
+    rectangle(stdscr, uly-1, ulx-1, uly + nlines, ulx + ncols)
+    stdscr.refresh()
+
+    box = Textbox(editwin)
+    # Let the user edit until Ctrl-G is struck.
+    box.edit()
+    # Get resulting contents
+    message = box.gather()
+    
+    if message != "":
+        url_format = apiURL + "/v1/messages/" + contactId
+        response = requests.post(url_format, headers = auth, json = {"text":message} )
+        stdscr.addstr(20,10, "Message sent")
+    else:
+        stdscr.addstr(20,10, "Message empty", curses.color_pair(4) )
+    stdscr.refresh()
+    stdscr.getch()
+    
+    messages(stdscr, contactId, contactName)
+
     
 class CursedMenu(object):
     '''A class which abstracts the horrors of building a curses-based menu system'''
@@ -166,8 +194,6 @@ class CursedMenu(object):
         self.selected = self.selected % len(self.options)
         return
 
-
-
     def handle_request(self, request):
         '''This is where you do things with the request'''
         if request is "Contacts":
@@ -212,14 +238,69 @@ class CursedMenu(object):
                 if self.option > 0:
                     self.option -= 1
                 else: self.option = len(self.submenu)
-        '''if c == 10:
-            #d = self.submenu[self.option]
+        if c == 10:
+            d = self.submenu[self.option]  #TO-DO enviar id a la consulta de chats y mostrar venta
+        return self.draw_messages(self.submenu[self.option],messages(self.option+1),self.option+1)
+
+    def draw_messages(self, subtitle, messages, contactId):
+        '''Actually draws the submenu and handles branching'''
+        c = None
+        curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_CYAN)
+        curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLUE)
+        self.option = 0
+        height = 24
+        cols = 43
+        h = 3
+        w = 36
+        while c != 10:
+            self.s = curses.newwin(height, cols, h, w)
+            self.s.keypad(1)
+            self.s.box()
+            self.s.addstr(0,1, subtitle.upper(), curses.A_BOLD) #Subtitle for this menu
+            
+            #ACA VIENEN LOS MENSAJES
+            y = 1
+            index = 1
+            if len(messages) > 22:
+                startline = len(messages) - 22
+            for msg in messages:
+                if index > startline:
+                    color, x, text = message(msg)
+                    self.s.attron(curses.color_pair(color))
+                    self.s.addstr(y,x, text)
+                    self.s.attroff(curses.color_pair(color))
+                    y += 1
+                index += 1
+                #if y > 22:
+                #    break
+            '''Dibujar el cuadro de texto para nuevos mensajes
+            send(contactId)
+            '''
+            #HASTA ACA
+            self.s.refresh()
+            c = self.s.getch() # Gets user input
+            
+        # This is a number; check to see if we can set it
+            if c >= ord('1') and c <= ord(str(len(self.submenu)+1)):
+                self.option = c - ord('0') - 1 # convert keypress back to a number, then subtract 1 to get index
+       # Increment or Decrement
+            elif c == curses.KEY_DOWN: # down arrow
+                if self.option < len(self.submenu):
+                    self.option += 1
+                else: self.option = 0
+            elif c == curses.KEY_UP: # up arrow
+                if self.option > 0:
+                    self.option -= 1
+                else: self.option = len(self.submenu)
+        if c == 10:
+            d = self.submenu[self.option]  #TO-DO enviar id a la consulta de chats y mostrar ventana de chats con textbox para escribir mensaje
             d = str(self.option+1)
             self.s.addstr(6,1, d)
             self.s.refresh()
-        self.s.getch()'''
+        self.s.getch()
         return self.draw_submenu(self.submenu[self.option],messages(self.option+1, self.submenu[self.option]),8,20,3,16)
-
+    
+    
     def __exit__(self):
         curses.endwin()
         os.system('clear')
@@ -227,4 +308,4 @@ class CursedMenu(object):
 
 '''demo'''
 cm = CursedMenu()
-cm.show(['Contacts','Groups','Forums','Blogs'], title='Briar Linux Client 0.0.1v', subtitle='Main Menu')
+cm.show(['Contacts','Groups','Forums','Blogs'], title='Briar Linux Client 0.1.1v', subtitle='Main Menu')

@@ -170,12 +170,12 @@ def draw_window(stdscr, title, statusbarstr):
     start_y = 1 
 
     stdscr.border(0)
-    
+    '''
     # Render status bar
     stdscr.attron(curses.color_pair(3))
     stdscr.addstr(height-2, 1, statusbarstr)
     stdscr.addstr(height-2, len(statusbarstr)+1, " " * (width - len(statusbarstr) - 2))
-    stdscr.attroff(curses.color_pair(3))
+    stdscr.attroff(curses.color_pair(3))'''
 
     # Turning on attributes for title
     stdscr.attron(curses.color_pair(1))

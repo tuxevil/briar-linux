@@ -8,3 +8,5 @@ Install Briar headless REST API (https://code.briarproject.org/briar/briar/tree/
 
 Usage:
 python3 briar-0.0.1.py
+
+![Screenshot](https://github.com/tuxevil/briar-linux/blob/master/Screenshot_20200423_113056.png)
